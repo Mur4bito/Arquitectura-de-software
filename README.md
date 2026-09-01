@@ -1,6 +1,8 @@
 # Arquitectura-de-software
 Aquí esta el proyecto de arquitectura de software que se ira actualizando conforme avancemos el curso.
 
+(después de actualizar me doy cuenta que pidió 3 o 4 líneas y ya llevo como 150 para explicar detalle a detalle como funciona el proyecto júas júas)
+
 Hasta ahora la primera parte:
 API de Productos
 
@@ -89,3 +91,65 @@ curl -X DELETE http://localhost:3000/products/<ID>
 
 Reemplaza <ID> por el _id real de un producto, que te devuelve el POST o el GET a /products.
 (Generalmente suelo ver el ID del producto en postman o en MongoDB).
+
+# Actualización tarea 2
+
+Esta segunda etapa agregó:
+
+Autenticación: POST /login devuelve un JWT, y POST /products ahora requiere ese token para crear productos.
+Frontend en React (carpeta frontend/): lista productos con TanStack Query, permite crear productos con un formulario validado (React Hook Form + Zod), y maneja el login guardando el token para las peticiones protegidas.
+
+# Instalación:
+
+# Instalar las dependencias del backend, parado en la raíz del proyecto:
+
+npm install
+
+# Instalar las dependencias del frontend:
+
+cd frontend
+npm install
+
+# Configuración
+
+Crear un archivo .env en la raíz del proyecto (junto a server.js) con las siguientes variables:
+
+MONGO_URI=mongodb+srv://<usuario>:<password>@<cluster>.mongodb.net/productos-api
+PORT=3000
+JWT_SECRET=una-clave-larga-dificil-de-adivinar
+
+Reemplazar <usuario>, <password> y <cluster> por los datos de tu conexión de MongoDB Atlas. Si usás MongoDB local en vez de Atlas, la URI sería algo como mongodb://localhost:27017/productos-api.
+
+El archivo .env no debería subirse al repositorio (agregalo a .gitignore).
+
+# Cómo levantar el proyecto
+
+Necesitas dos terminales corriendo al mismo tiempo:
+
+Terminal 1 — backend (parado en la raíz del proyecto):
+
+node server.js
+Conectado a MongoDB
+La api esta corriendo en el puerto 3000
+
+Terminal 2 — frontend (parado en frontend/):
+
+
+npm run dev
+
+El backend queda en http://localhost:3000 y el frontend en http://localhost:5173 (Vite confirma la URL exacta en la consola).
+
+# Estructura del proyecto hasta ahora
+├── config/
+│   └── db.js               # Conexión a MongoDB con Mongoose
+├── models/
+│   └── Product.js           # Esquema de Mongoose para productos
+├── frontend/
+│   └── src/
+│       ├── api/              # Llamadas fetch a la API (products.js, auth.js)
+│       ├── components/       # ProductList, ProductForm, LoginForm
+│       ├── schemas/          # Validación con Zod (productSchema.js)
+│       └── App.jsx
+├── server.js                 # Servidor Express, rutas y middleware de JWT
+├── .env                      # Variables de entorno (no se sube al repo)
+└── package.json
