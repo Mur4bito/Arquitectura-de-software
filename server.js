@@ -3,11 +3,14 @@ import { z } from 'zod';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import Product from './models/Product.js';
+import jwt from 'jsonwebtoken';
+import cors from 'cors';
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const productSchema = z.object({
     name: z.string().min(3),
@@ -17,7 +20,32 @@ const productSchema = z.object({
 
 const productUpdateSchema = productSchema.partial();
 
-app.post('/products', async (req, res) => {
+const ADMIN_USER = { username: 'admin', password: '1234' };
+
+function verifyToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Token no proporcionado' });
+    }
+    const token = authHeader.split(' ')[1];
+    try {
+        req.user = jwt.verify(token, process.env.JWT_SECRET);
+        next();
+    } catch (error) {
+        return res.status(401).json({ error: 'Token inválido o expirado' });
+    }
+}
+
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    if (username !== ADMIN_USER.username || password !== ADMIN_USER.password) {
+        return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+    }
+    const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.json({ token });
+});
+
+app.post('/products', verifyToken, async (req, res) => {
     const result = productSchema.safeParse(req.body);
     if(!result.success){
         return res.status(400).json({error: result.error.issues});
